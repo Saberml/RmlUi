@@ -3,11 +3,7 @@ name: CMake
 on: [push]
 
 jobs:
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  Linux:
     name: Build on ${{ matrix.os }}
     
     runs-on: ${{ matrix.os }}
@@ -20,6 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         BUILD_TESTING: ['OFF']
         NO_FONT_INTERFACE_DEFAULT: ['OFF']
         DISABLE_RTTI_AND_EXCEPTIONS: ['OFF']
@@ -27,23 +24,20 @@ jobs:
         cc: ['clang']
         cxx: ['clang++']
         include:
-          - os: ubuntu-latest
-            BUILD_TESTING: 'ON'
-          - os: ubuntu-latest
-            NO_FONT_INTERFACE_DEFAULT: 'ON'
-          - os: ubuntu-latest
-            DISABLE_RTTI_AND_EXCEPTIONS: 'ON'
+          - BUILD_TESTING: 'ON'
+          - NO_FONT_INTERFACE_DEFAULT: 'ON'
+          - DISABLE_RTTI_AND_EXCEPTIONS: 'ON'
             NO_THIRDPARTY_CONTAINERS: 'ON'
             cc: gcc
             cxx: g++
-          - os: macos-latest
 
     steps:
     - uses: actions/checkout@v2
       
     - name: Install Dependencies
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt-get install cmake ninja-build libsdl2-dev libsdl2-image-dev libfreetype6-dev libglew-dev liblua5.2-dev libsfml-dev librlottie-dev
+      run: |
+        sudo apt-get install cmake ninja-build libsdl2-dev libsdl2-image-dev libfreetype6-dev libglew-dev liblua5.2-dev libsfml-dev
+        cmake --version
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/Build
@@ -59,6 +53,41 @@ jobs:
       run: cmake --build . --config $BUILD_TYPE
 
     - name: Test
+      if: ${{ matrix.BUILD_TESTING == 'ON' }}
       working-directory: ${{runner.workspace}}/Build
       shell: bash
       run: ctest -C $BUILD_TYPE
+
+
+  MacOS:
+    name: Build on ${{ matrix.os }}
+    
+    runs-on: ${{ matrix.os }}
+    
+    env:
+      BUILD_TYPE: Release
+  
+    strategy:
+      matrix:
+        os: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Install Dependencies
+      run: |
+        brew install lua
+        cmake --version
+      
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/Build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/Build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LUA_BINDINGS=ON -DBUILD_SAMPLES=ON -DWARNINGS_AS_ERRORS=ON
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/Build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE
