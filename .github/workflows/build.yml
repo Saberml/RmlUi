@@ -4,9 +4,9 @@ on: [push]
 
 jobs:
   Linux:
-    name: Build on ${{ matrix.os }}
+    name: Build on ubuntu-latest
     
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     
     env:
       BUILD_TYPE: Release
@@ -16,7 +16,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
         BUILD_TESTING: ['OFF']
         NO_FONT_INTERFACE_DEFAULT: ['OFF']
         DISABLE_RTTI_AND_EXCEPTIONS: ['OFF']
@@ -35,9 +34,7 @@ jobs:
     - uses: actions/checkout@v2
       
     - name: Install Dependencies
-      run: |
-        sudo apt-get install cmake ninja-build libsdl2-dev libsdl2-image-dev libfreetype6-dev libglew-dev liblua5.2-dev libsfml-dev
-        cmake --version
+      run: sudo apt-get install cmake ninja-build libsdl2-dev libsdl2-image-dev libfreetype6-dev libglew-dev liblua5.2-dev libsfml-dev
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/Build
@@ -60,24 +57,18 @@ jobs:
 
 
   MacOS:
-    name: Build on ${{ matrix.os }}
+    name: Build on macos-latest
     
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     
     env:
       BUILD_TYPE: Release
-  
-    strategy:
-      matrix:
-        os: macos-latest
 
     steps:
     - uses: actions/checkout@v2
       
     - name: Install Dependencies
-      run: |
-        brew install lua
-        cmake --version
+      run: brew install lua
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/Build
