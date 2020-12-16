@@ -18,6 +18,7 @@ jobs:
       CXX: ${{ matrix.cxx }}
   
     strategy:
+      fail-fast: false
       matrix:
         BUILD_TESTING: ['OFF']
         NO_FONT_INTERFACE_DEFAULT: ['OFF']
@@ -26,11 +27,11 @@ jobs:
         cc: ['clang']
         cxx: ['clang++']
         include:
-          - os: ubunutu-latest
+          - os: ubuntu-latest
             BUILD_TESTING: 'ON'
-          - os: ubunutu-latest
+          - os: ubuntu-latest
             NO_FONT_INTERFACE_DEFAULT: 'ON'
-          - os: ubunutu-latest
+          - os: ubuntu-latest
             DISABLE_RTTI_AND_EXCEPTIONS: 'ON'
             NO_THIRDPARTY_CONTAINERS: 'ON'
             cc: gcc
